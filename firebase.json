@@ -1,0 +1,25 @@
+{
+  "functions": {
+    "source": "functions"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "sapa-hebat",
+          "appId": "1:273103032055:android:9b2cffc9a7b7f85b508df2",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "sapa-hebat",
+          "configurations": {
+            "android": "1:273103032055:android:9b2cffc9a7b7f85b508df2",
+            "ios": "1:273103032055:ios:e6cc031cea912382508df2"
+          }
+        }
+      }
+    }
+  }
+}

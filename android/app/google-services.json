@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "273103032055",
+    "project_id": "sapa-hebat",
+    "storage_bucket": "sapa-hebat.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:273103032055:android:9b2cffc9a7b7f85b508df2",
+        "android_client_info": {
+          "package_name": "com.example.ireng"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjDVwZLnC-Swexcb3DPt9aLrOxejA2Aqs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
