@@ -8,6 +8,7 @@ try {
 exports.sendNotificationOnTimeRecord = functions.firestore
   .document("time_records/{recordId}")
   .onCreate(async (snap, context) => {
+    console.log("🚀 Triggered sendNotificationOnTimeRecord");
     const record = snap.data();
     const userId = record.user_id;
 
@@ -19,39 +20,64 @@ exports.sendNotificationOnTimeRecord = functions.firestore
       .limit(1)
       .get();
 
-    if (userQuery.empty) return null;
+    if (userQuery.empty) {
+      console.log("❌ Student not found for ID:", userId);
+      return null;
+    }
     const student = userQuery.docs[0].data();
+    console.log("👤 Student found:", student.username);
 
-    // Kirim ke Guru
-    const guruQuery = await admin
-      .firestore()
-      .collection("users")
-      .where("role", "==", "guru")
-      .get();
+    // Pastikan siswa memiliki guru_id dan ortu_id
+    const guruId = student.guru_id;
+    const ortuId = student.ortu_id;
+    const tokens = [];
 
-    const teacherTokens = [];
-    guruQuery.forEach((doc) => {
-      const data = doc.data();
-      if (data.fcm_token) teacherTokens.push(data.fcm_token);
-    });
+    // Ambil token Guru
+    if (guruId) {
+      const guruQuery = await admin
+        .firestore()
+        .collection("users")
+        .where("id", "==", guruId)
+        .limit(1)
+        .get();
 
-    // Kirim ke Ortu
-    const ortuQuery = await admin
-      .firestore()
-      .collection("users")
-      .where("role", "==", "ortu")
-      .get();
+      if (!guruQuery.empty) {
+        const guruData = guruQuery.docs[0].data();
+        if (guruData.fcm_token) {
+          console.log("✅ Found Guru Token for:", guruData.username);
+          tokens.push(guruData.fcm_token);
+        } else {
+          console.log("⚠️ Guru found but no FCM token:", guruData.username);
+        }
+      }
+    }
 
-    const parentTokens = [];
-    ortuQuery.forEach((doc) => {
-      const data = doc.data();
-      if (data.fcm_token) parentTokens.push(data.fcm_token);
-    });
+    // Ambil token Ortu
+    if (ortuId) {
+      const ortuQuery = await admin
+        .firestore()
+        .collection("users")
+        .where("id", "==", ortuId)
+        .limit(1)
+        .get();
 
-    const allTokens = [...teacherTokens, ...parentTokens];
-    if (allTokens.length === 0) return null;
+      if (!ortuQuery.empty) {
+        const ortuData = ortuQuery.docs[0].data();
+        if (ortuData.fcm_token) {
+          console.log("✅ Found Ortu Token for:", ortuData.username);
+          tokens.push(ortuData.fcm_token);
+        } else {
+          console.log("⚠️ Ortu found but no FCM token:", ortuData.username);
+        }
+      }
+    }
 
-    const payload = {
+    if (tokens.length === 0) {
+      console.log("⚠️ No tokens found to send notification.");
+      return null;
+    }
+
+    const message = {
       notification: {
         title: "Aktivitas Siswa",
         body: `${student.username} baru saja mencatat: ${record.record_type}`,
@@ -60,15 +86,35 @@ exports.sendNotificationOnTimeRecord = functions.firestore
         click_action: "FLUTTER_NOTIFICATION_CLICK",
         type: "activity_update",
       },
+      tokens: tokens, // Array of tokens
     };
 
-    return admin.messaging().sendToDevice(allTokens, payload);
+    try {
+      const response = await admin.messaging().sendEachForMulticast(message);
+      console.log(
+        "📤 Notification sent successfully:",
+        response.successCount + " messages sent",
+      );
+      if (response.failureCount > 0) {
+        console.log("❌ Failed to send:", response.failureCount + " messages");
+        response.responses.forEach((resp, idx) => {
+          if (!resp.success) {
+            console.error(`Token: ${tokens[idx]} Error:`, resp.error);
+          }
+        });
+      }
+      return response;
+    } catch (error) {
+      console.error("❌ Error sending notification:", error);
+      return null;
+    }
   });
 
 // Trigger saat ada Activity baru (misal: Sholat, Makan)
 exports.sendNotificationOnActivity = functions.firestore
   .document("activities/{activityId}")
   .onCreate(async (snap, context) => {
+    console.log("🚀 Triggered sendNotificationOnActivity");
     const activity = snap.data();
     const userId = activity.user_id;
 
@@ -79,39 +125,64 @@ exports.sendNotificationOnActivity = functions.firestore
       .limit(1)
       .get();
 
-    if (userQuery.empty) return null;
+    if (userQuery.empty) {
+      console.log("❌ Student not found for ID:", userId);
+      return null;
+    }
     const student = userQuery.docs[0].data();
+    console.log("👤 Student found:", student.username);
 
-    // Kirim ke Guru
-    const guruQuery = await admin
-      .firestore()
-      .collection("users")
-      .where("role", "==", "guru")
-      .get();
+    // Pastikan siswa memiliki guru_id dan ortu_id
+    const guruId = student.guru_id;
+    const ortuId = student.ortu_id;
+    const tokens = [];
 
-    const teacherTokens = [];
-    guruQuery.forEach((doc) => {
-      const data = doc.data();
-      if (data.fcm_token) teacherTokens.push(data.fcm_token);
-    });
+    // Ambil token Guru
+    if (guruId) {
+      const guruQuery = await admin
+        .firestore()
+        .collection("users")
+        .where("id", "==", guruId)
+        .limit(1)
+        .get();
 
-    // Kirim ke Ortu
-    const ortuQuery = await admin
-      .firestore()
-      .collection("users")
-      .where("role", "==", "ortu")
-      .get();
+      if (!guruQuery.empty) {
+        const guruData = guruQuery.docs[0].data();
+        if (guruData.fcm_token) {
+          console.log("✅ Found Guru Token for:", guruData.username);
+          tokens.push(guruData.fcm_token);
+        } else {
+          console.log("⚠️ Guru found but no FCM token:", guruData.username);
+        }
+      }
+    }
 
-    const parentTokens = [];
-    ortuQuery.forEach((doc) => {
-      const data = doc.data();
-      if (data.fcm_token) parentTokens.push(data.fcm_token);
-    });
+    // Ambil token Ortu
+    if (ortuId) {
+      const ortuQuery = await admin
+        .firestore()
+        .collection("users")
+        .where("id", "==", ortuId)
+        .limit(1)
+        .get();
 
-     const allTokens = [...teacherTokens, ...parentTokens];
-    if (allTokens.length === 0) return null;
+      if (!ortuQuery.empty) {
+        const ortuData = ortuQuery.docs[0].data();
+        if (ortuData.fcm_token) {
+          console.log("✅ Found Ortu Token for:", ortuData.username);
+          tokens.push(ortuData.fcm_token);
+        } else {
+          console.log("⚠️ Ortu found but no FCM token:", ortuData.username);
+        }
+      }
+    }
 
-    const payload = {
+    if (tokens.length === 0) {
+      console.log("⚠️ No tokens found to send notification.");
+      return null;
+    }
+
+    const message = {
       notification: {
         title: "Aktivitas Siswa",
         body: `${student.username} baru saja mencatat: ${activity.activity_type}`,
@@ -120,7 +191,26 @@ exports.sendNotificationOnActivity = functions.firestore
         click_action: "FLUTTER_NOTIFICATION_CLICK",
         type: "activity_update",
       },
+      tokens: tokens,
     };
 
-    return admin.messaging().sendToDevice(allTokens, payload);
+    try {
+      const response = await admin.messaging().sendEachForMulticast(message);
+      console.log(
+        "📤 Notification sent successfully:",
+        response.successCount + " messages sent",
+      );
+      if (response.failureCount > 0) {
+        console.log("❌ Failed to send:", response.failureCount + " messages");
+        response.responses.forEach((resp, idx) => {
+          if (!resp.success) {
+            console.error(`Token: ${tokens[idx]} Error:`, resp.error);
+          }
+        });
+      }
+      return response;
+    } catch (error) {
+      console.error("❌ Error sending notification:", error);
+      return null;
+    }
   });

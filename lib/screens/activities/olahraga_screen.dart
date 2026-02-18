@@ -50,8 +50,9 @@ class _OlahragaScreenState extends State<OlahragaScreen> {
           List<dynamic> savedItems = jsonDecode(data['items']);
           setState(() {
             for (var item in savedItems) {
-              if (_checklistItems.containsKey(item))
+              if (_checklistItems.containsKey(item)) {
                 _checklistItems[item] = true;
+              }
             }
           });
         } catch (e) {
@@ -80,9 +81,9 @@ class _OlahragaScreenState extends State<OlahragaScreen> {
       await DatabaseHelper.instance.upsertActivity(activity);
       if (mounted) {
         setState(() => _isLoading = false);
-        if (widget.isFlowMode && widget.onNext != null)
+        if (widget.isFlowMode && widget.onNext != null) {
           widget.onNext!();
-        else {
+        } else {
           Navigator.pop(context, true);
           ScaffoldMessenger.of(
             context,

@@ -33,6 +33,7 @@ class _BeribadahScreenState extends State<BeribadahScreen> {
     'Hindu',
     'Buddha',
     'Khonghucu',
+    'Kepercayaan Sapta Darma',
   ];
 
   Map<String, bool> _checklistItems = {};
@@ -74,6 +75,9 @@ class _BeribadahScreenState extends State<BeribadahScreen> {
         break;
       case 'Buddha':
         items = ['Membaca Paritta', 'Meditasi', 'Dana Makan'];
+        break;
+      case 'Kepercayaan Sapta Darma':
+        items = ['Sujud', 'Hening'];
         break;
       default:
         items = ['Berdoa Pagi', 'Berdoa Malam', 'Bersyukur'];

@@ -82,9 +82,9 @@ class _MakanSehatScreenState extends State<MakanSehatScreen> {
       await DatabaseHelper.instance.upsertActivity(activity);
       if (mounted) {
         setState(() => _isLoading = false);
-        if (widget.isFlowMode && widget.onNext != null)
+        if (widget.isFlowMode && widget.onNext != null) {
           widget.onNext!();
-        else {
+        } else {
           Navigator.pop(context, true);
           ScaffoldMessenger.of(
             context,

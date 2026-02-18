@@ -45,9 +45,9 @@ class _MonitoringTabState extends State<MonitoringTab> {
       for (var item in allData) {
         final status = item['status_guru'] ?? 'pending';
 
-        if (status == 'verified')
+        if (status == 'verified') {
           verified++;
-        else if (status == 'rejected')
+        } else if (status == 'rejected')
           rejected++;
         else
           pending++;

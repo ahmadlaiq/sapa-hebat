@@ -21,7 +21,6 @@ class AppTheme {
         primary: primaryBlue,
         secondary: primaryOrange,
         surface: cardBackground,
-        background: backgroundColor,
       ),
 
       appBarTheme: AppBarTheme(

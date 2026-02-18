@@ -177,15 +177,15 @@ class _BerandaTabState extends State<BerandaTab> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.green.shade200),
                 ),
-                child: Column(
+                child: const Column(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.check_circle,
                       color: Colors.green,
                       size: 40,
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: 8),
+                    Text(
                       'Kamu sudah mengisi rekap hari ini!',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -193,7 +193,7 @@ class _BerandaTabState extends State<BerandaTab> {
                         fontSize: 16,
                       ),
                     ),
-                    const Text('Sampai jumpa besok!'),
+                    Text('Sampai jumpa besok!'),
                   ],
                 ),
               ),

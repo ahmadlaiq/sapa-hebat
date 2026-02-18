@@ -256,10 +256,12 @@ class _DetailVerifikasiScreenState extends State<DetailVerifikasiScreen> {
   }
 
   Widget _buildStatusIcon(String status) {
-    if (status == 'verified')
+    if (status == 'verified') {
       return const Icon(Icons.check_circle, color: Colors.green);
-    if (status == 'rejected')
+    }
+    if (status == 'rejected') {
       return const Icon(Icons.cancel, color: Colors.red);
+    }
     return const Icon(Icons.hourglass_empty, color: Colors.orange);
   }
 }

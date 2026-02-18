@@ -288,10 +288,12 @@ class DatabaseHelper {
       final activityData = Map<String, dynamic>.from(activity);
       activityData['id'] = newId;
       // Default statuses if not present (though usually handled by UI/logic)
-      if (!activityData.containsKey('status_guru'))
+      if (!activityData.containsKey('status_guru')) {
         activityData['status_guru'] = 'pending';
-      if (!activityData.containsKey('status_ortu'))
+      }
+      if (!activityData.containsKey('status_ortu')) {
         activityData['status_ortu'] = 'pending';
+      }
 
       await _firestore.collection('activities').add(activityData);
       return newId;
@@ -323,10 +325,12 @@ class DatabaseHelper {
       final int newId = DateTime.now().millisecondsSinceEpoch;
       final recordData = Map<String, dynamic>.from(record);
       recordData['id'] = newId;
-      if (!recordData.containsKey('status_guru'))
+      if (!recordData.containsKey('status_guru')) {
         recordData['status_guru'] = 'pending';
-      if (!recordData.containsKey('status_ortu'))
+      }
+      if (!recordData.containsKey('status_ortu')) {
         recordData['status_ortu'] = 'pending';
+      }
 
       await _firestore.collection('time_records').add(recordData);
       return newId;
