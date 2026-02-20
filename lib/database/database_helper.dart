@@ -548,17 +548,23 @@ class DatabaseHelper {
       if (studentIds.isEmpty) return [];
 
       final statusCol = role == 'guru' ? 'status_guru' : 'status_ortu';
+      List<Map<String, dynamic>> allActivities = [];
 
-      // Removing status filter from query to avoid composite index requirement
-      final snapshot = await _firestore
-          .collection('activities')
-          .where('user_id', whereIn: studentIds)
-          .get();
+      // Chunk studentIds into batches of 10 to respect Firestore limit
+      for (var i = 0; i < studentIds.length; i += 10) {
+        var end = (i + 10 < studentIds.length) ? i + 10 : studentIds.length;
+        var chunk = studentIds.sublist(i, end);
 
-      final list = snapshot.docs.map((doc) => doc.data()).toList();
+        final snapshot = await _firestore
+            .collection('activities')
+            .where('user_id', whereIn: chunk)
+            .get();
+
+        allActivities.addAll(snapshot.docs.map((doc) => doc.data()).toList());
+      }
 
       // Filter client-side
-      final filteredList = list
+      final filteredList = allActivities
           .where((data) => data[statusCol] == 'pending')
           .toList();
 
@@ -581,17 +587,23 @@ class DatabaseHelper {
     try {
       if (studentIds.isEmpty) return [];
       final statusCol = role == 'guru' ? 'status_guru' : 'status_ortu';
+      List<Map<String, dynamic>> allRecords = [];
 
-      // Removing status filter from query to avoid composite index requirement
-      final snapshot = await _firestore
-          .collection('time_records')
-          .where('user_id', whereIn: studentIds)
-          .get();
+      // Chunk studentIds into batches of 10
+      for (var i = 0; i < studentIds.length; i += 10) {
+        var end = (i + 10 < studentIds.length) ? i + 10 : studentIds.length;
+        var chunk = studentIds.sublist(i, end);
 
-      final list = snapshot.docs.map((doc) => doc.data()).toList();
+        final snapshot = await _firestore
+            .collection('time_records')
+            .where('user_id', whereIn: chunk)
+            .get();
+
+        allRecords.addAll(snapshot.docs.map((doc) => doc.data()).toList());
+      }
 
       // Filter client-side
-      final filteredList = list
+      final filteredList = allRecords
           .where((data) => data[statusCol] == 'pending')
           .toList();
 
@@ -651,22 +663,33 @@ class DatabaseHelper {
     try {
       if (studentIds.isEmpty) return [];
 
-      final activitiesSnapshot = await _firestore
-          .collection('activities')
-          .where('user_id', whereIn: studentIds)
-          .get();
+      List<Map<String, dynamic>> allActivities = [];
+      List<Map<String, dynamic>> allTimeRecords = [];
 
-      final timeSnapshot = await _firestore
-          .collection('time_records')
-          .where('user_id', whereIn: studentIds)
-          .get();
+      // Chunk studentIds into batches of 10
+      for (var i = 0; i < studentIds.length; i += 10) {
+        var end = (i + 10 < studentIds.length) ? i + 10 : studentIds.length;
+        var chunk = studentIds.sublist(i, end);
+
+        final activitiesSnapshot = await _firestore
+            .collection('activities')
+            .where('user_id', whereIn: chunk)
+            .get();
+        allActivities.addAll(activitiesSnapshot.docs.map((doc) => doc.data()));
+
+        final timeSnapshot = await _firestore
+            .collection('time_records')
+            .where('user_id', whereIn: chunk)
+            .get();
+        allTimeRecords.addAll(timeSnapshot.docs.map((doc) => doc.data()));
+      }
 
       List<Map<String, dynamic>> combined = [];
-      for (var doc in activitiesSnapshot.docs) {
-        combined.add({...doc.data(), 'data_type': 'activity'});
+      for (var data in allActivities) {
+        combined.add({...data, 'data_type': 'activity'});
       }
-      for (var doc in timeSnapshot.docs) {
-        combined.add({...doc.data(), 'data_type': 'time'});
+      for (var data in allTimeRecords) {
+        combined.add({...data, 'data_type': 'time'});
       }
 
       combined.sort(
