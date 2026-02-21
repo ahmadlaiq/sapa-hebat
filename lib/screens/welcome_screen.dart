@@ -46,7 +46,7 @@ class WelcomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Aplikasi pembiasaan perilaku sehat siswa',
+                'Sistem Aplikasi Pemantau Kebiasaan Anak Indonesia hebat',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),

@@ -52,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Siswa Aktif Peduli Alam Hidup Ekonomis Bersih Aman Tertib',
+              'Sistem Aplikasi Pemantau Kebiasaan Anak Indonesia hebat',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),

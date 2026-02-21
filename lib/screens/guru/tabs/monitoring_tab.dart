@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
 import '../../../database/database_helper.dart';
 
 class MonitoringTab extends StatefulWidget {
@@ -213,7 +214,43 @@ class _MonitoringTabState extends State<MonitoringTab> {
   }
 
   String _formatSubtitle(Map<String, dynamic> item) {
-    final date = DateTime.parse(item['created_at']);
-    return DateFormat('dd MMM, HH:mm').format(date);
+    String time = '';
+    try {
+      final date = DateTime.parse(item['created_at']);
+      time = DateFormat('dd MMM, HH:mm').format(date);
+    } catch (_) {
+      time = item['created_at'].toString();
+    }
+
+    if (item['data_type'] == 'time') {
+      return '$time - Pukul: ${item['time_value']}';
+    }
+
+    try {
+      String itemsText = '';
+      if (item['items'] != null) {
+        var rawItems = item['items'];
+        if (rawItems is String) {
+          List<dynamic> items = jsonDecode(rawItems);
+          itemsText = items.join(', ');
+        } else if (rawItems is List) {
+          itemsText = rawItems.join(', ');
+        }
+      }
+
+      String notes = item['notes'] ?? '';
+      String details = '';
+      if (notes.isNotEmpty) {
+        details = itemsText.isNotEmpty
+            ? '$itemsText\nCatatan: $notes'
+            : 'Catatan: $notes';
+      } else {
+        details = itemsText;
+      }
+
+      return details.isNotEmpty ? '$time\n$details' : time;
+    } catch (e) {
+      return time;
+    }
   }
 }
