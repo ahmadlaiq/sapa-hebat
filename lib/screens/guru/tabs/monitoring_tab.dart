@@ -53,8 +53,6 @@ class _MonitoringTabState extends State<MonitoringTab> {
         else
           pending++;
 
-        // Only show history of processed items (not pending) or show all?
-        // User wants to see "what I just approved". So processed items are key.
         if (status != 'pending') {
           history.add(item);
         }
@@ -82,9 +80,64 @@ class _MonitoringTabState extends State<MonitoringTab> {
 
     return RefreshIndicator(
       onRefresh: _loadData,
+      color: Colors.green,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Banner Info - Premium look
+          Container(
+            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.only(bottom: 24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.green[400]!, Colors.green[600]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.green.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.analytics_outlined,
+                  color: Colors.white,
+                  size: 32,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Ringkasan Aktivitas',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Pantau performa dan kepatuhan siswa binaan Anda hari ini.',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
           const Text(
             'Statistik Verifikasi',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -98,37 +151,53 @@ class _MonitoringTabState extends State<MonitoringTab> {
                 Colors.green,
                 Icons.check_circle,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               _buildStatCard(
                 'Ditolak',
                 _rejectedCount,
                 Colors.red,
                 Icons.cancel,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               _buildStatCard(
                 'Pending',
                 _pendingCount,
-                Colors.grey,
+                Colors.orange,
                 Icons.hourglass_empty,
               ),
             ],
           ),
           const SizedBox(height: 32),
 
-          const Text(
-            'Riwayat Aktivitas Terakhir',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Riwayat Terakhir',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TextButton(onPressed: () {}, child: const Text('Lihat Semua')),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
 
           if (_recentHistory.isEmpty)
             Center(
               child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Text(
-                  'Belum ada aktivitas yang diproses',
-                  style: TextStyle(color: Colors.grey[600]),
+                padding: const EdgeInsets.all(40.0),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.history_toggle_off,
+                      size: 48,
+                      color: Colors.grey[300],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Belum ada aktivitas yang diproses',
+                      style: TextStyle(color: Colors.grey[500]),
+                    ),
+                  ],
                 ),
               ),
             )
@@ -142,16 +211,16 @@ class _MonitoringTabState extends State<MonitoringTab> {
   Widget _buildStatCard(String label, int count, Color color, IconData icon) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.2)),
         ),
         child: Column(
           children: [
             Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               count.toString(),
               style: TextStyle(
@@ -160,6 +229,7 @@ class _MonitoringTabState extends State<MonitoringTab> {
                 color: color,
               ),
             ),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
@@ -178,25 +248,54 @@ class _MonitoringTabState extends State<MonitoringTab> {
   Widget _buildHistoryItem(Map<String, dynamic> item) {
     String title = _formatTitle(item);
     String subtitle = _formatSubtitle(item);
-    String status = item['status_guru'];
+    String status = item['status_guru'] ?? 'pending';
+
     Color color = status == 'verified' ? Colors.green : Colors.red;
     IconData icon = status == 'verified' ? Icons.check_circle : Icons.cancel;
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
           backgroundColor: color.withOpacity(0.1),
-          child: Icon(icon, color: color, size: 20),
+          child: Icon(icon, color: color, size: 24),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle),
-        trailing: Text(
-          status == 'verified' ? 'Disetujui' : 'Ditolak',
-          style: TextStyle(
-            color: color,
+        title: Text(
+          title,
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 12,
+            color: Colors.black87,
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4.0),
+          child: Text(subtitle, style: TextStyle(color: Colors.grey[600])),
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            status == 'verified' ? 'Disetujui' : 'Ditolak',
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
           ),
         ),
       ),

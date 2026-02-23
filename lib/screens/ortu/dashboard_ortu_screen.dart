@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'tabs/monitoring_tab.dart';
 import 'tabs/profil_tab.dart';
+import 'tabs/verifikasi_tab.dart';
 
 class DashboardOrtuScreen extends StatefulWidget {
   final int userId;
@@ -18,6 +19,7 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
   Widget build(BuildContext context) {
     final List<Widget> tabs = [
       MonitoringTab(userId: widget.userId),
+      VerifikasiTab(userId: widget.userId),
       ProfilTab(userId: widget.userId),
     ];
 
@@ -40,6 +42,10 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
             icon: Icon(Icons.bar_chart),
             label: 'Monitoring',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.verified_user),
+            label: 'Verifikasi',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
       ),
@@ -51,6 +57,8 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
       case 0:
         return 'Monitoring Anak';
       case 1:
+        return 'Verifikasi Aktivitas';
+      case 2:
         return 'Profil Orang Tua';
       default:
         return 'SAPA HEBAT - Orang Tua';
