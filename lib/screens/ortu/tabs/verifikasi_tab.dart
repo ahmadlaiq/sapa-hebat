@@ -58,23 +58,28 @@ class _VerifikasiTabState extends State<VerifikasiTab> {
         final key = '$userId-$date';
 
         if (!groups.containsKey(key)) {
-          groups[key] = {'user_id': userId, 'date': date, 'count': 0};
+          groups[key] = {
+            'user_id': userId,
+            'date': date,
+            'count': 0,
+            'kelas': '7',
+          };
         }
         groups[key]!['count'] = (groups[key]!['count'] as int) + 1;
       }
 
       // 3. Update User Names
       Set<int> userIds = groups.values.map((e) => e['user_id'] as int).toSet();
-      Map<int, String> userNames = {};
+      Map<int, Map<String, dynamic>> userData = {};
 
       for (var uid in userIds) {
         final user = await DatabaseHelper.instance.getUserById(uid);
         if (user != null) {
           String name = user['username'];
           name = name[0].toUpperCase() + name.substring(1);
-          userNames[uid] = name;
+          userData[uid] = {'name': name, 'kelas': user['kelas'] ?? '7'};
         } else {
-          userNames[uid] = 'Anak $uid';
+          userData[uid] = {'name': 'Anak $uid', 'kelas': '7'};
         }
       }
 
@@ -85,7 +90,8 @@ class _VerifikasiTabState extends State<VerifikasiTab> {
           'user_id': value['user_id'],
           'date': value['date'],
           'count': value['count'],
-          'user_name': userNames[value['user_id']] ?? 'Unknown',
+          'user_name': userData[value['user_id']]?['name'] ?? 'Unknown',
+          'kelas': userData[value['user_id']]?['kelas'] ?? '7',
         });
       });
 
@@ -185,6 +191,7 @@ class _VerifikasiTabState extends State<VerifikasiTab> {
                         userId: item['user_id'],
                         date: item['date'],
                         userName: item['user_name'],
+                        kelas: item['kelas'],
                         role: 'ortu',
                       ),
                     ),
@@ -231,7 +238,16 @@ class _VerifikasiTabState extends State<VerifikasiTab> {
                                 color: Colors.black87,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Kelas ${item['kelas']}',
+                              style: TextStyle(
+                                color: Colors.orange[700],
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
                             Text(
                               _formatDate(item['date']),
                               style: TextStyle(

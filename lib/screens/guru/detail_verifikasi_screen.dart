@@ -7,6 +7,7 @@ class DetailVerifikasiScreen extends StatefulWidget {
   final int userId;
   final String date;
   final String userName;
+  final String? kelas;
   final String role; // 'guru' or 'ortu'
 
   const DetailVerifikasiScreen({
@@ -14,6 +15,7 @@ class DetailVerifikasiScreen extends StatefulWidget {
     required this.userId,
     required this.date,
     required this.userName,
+    this.kelas,
     required this.role,
   });
 
@@ -371,6 +373,15 @@ class _DetailVerifikasiScreenState extends State<DetailVerifikasiScreen> {
                                 fontSize: 20,
                               ),
                             ),
+                            if (widget.kelas != null)
+                              Text(
+                                'Kelas ${widget.kelas}',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             const SizedBox(height: 4),
                             Text(
                               DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(

@@ -79,6 +79,7 @@ class _VerifikasiTabState extends State<VerifikasiTab> {
             'date': date,
             'count': 0,
             'user_name': 'Loading...',
+            'kelas': '7',
           };
         }
         groups[key]!['count'] = (groups[key]!['count'] as int) + 1;
@@ -91,6 +92,7 @@ class _VerifikasiTabState extends State<VerifikasiTab> {
         if (user != null) {
           String name = user['username'];
           groups[key]!['user_name'] = name[0].toUpperCase() + name.substring(1);
+          groups[key]!['kelas'] = user['kelas'] ?? '7';
         } else {
           groups[key]!['user_name'] = 'Siswa $userId';
         }
@@ -200,6 +202,7 @@ class _VerifikasiTabState extends State<VerifikasiTab> {
                         userId: item['user_id'],
                         date: item['date'],
                         userName: item['user_name'],
+                        kelas: item['kelas'],
                         role: 'guru',
                       ),
                     ),
@@ -246,7 +249,16 @@ class _VerifikasiTabState extends State<VerifikasiTab> {
                                 color: Colors.black87,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Kelas ${item['kelas']}',
+                              style: TextStyle(
+                                color: Colors.green[700],
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
                             Text(
                               _formatDate(item['date']),
                               style: TextStyle(

@@ -43,6 +43,15 @@ class _MonitoringTabState extends State<MonitoringTab> {
       int pending = 0;
       List<Map<String, dynamic>> history = [];
 
+      // Cache student data for history display
+      Map<int, Map<String, dynamic>> studentData = {};
+      for (var s in students) {
+        studentData[s['id']] = {
+          'name': s['username'][0].toUpperCase() + s['username'].substring(1),
+          'kelas': s['kelas'] ?? '7',
+        };
+      }
+
       for (var item in allData) {
         final status = item['status_guru'] ?? 'pending';
 
@@ -54,7 +63,12 @@ class _MonitoringTabState extends State<MonitoringTab> {
           pending++;
 
         if (status != 'pending') {
-          history.add(item);
+          final student = studentData[item['user_id']];
+          history.add({
+            ...item,
+            'user_name': student?['name'] ?? 'Siswa ${item['user_id']}',
+            'kelas': student?['kelas'] ?? '7',
+          });
         }
       }
 
@@ -273,15 +287,30 @@ class _MonitoringTabState extends State<MonitoringTab> {
           child: Icon(icon, color: color, size: 24),
         ),
         title: Text(
-          title,
+          '${item['user_name']} - Kelas ${item['kelas']}',
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.black87,
+            fontSize: 14,
           ),
         ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4.0),
-          child: Text(subtitle, style: TextStyle(color: Colors.grey[600])),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: color,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
+          ],
         ),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
