@@ -1,13 +1,46 @@
 import 'package:flutter/material.dart';
 import '../welcome_screen.dart';
+import '../../database/database_helper.dart';
 
-class ProfilTab extends StatelessWidget {
+class ProfilTab extends StatefulWidget {
   final int userId;
 
   const ProfilTab({super.key, required this.userId});
 
   @override
+  State<ProfilTab> createState() => _ProfilTabState();
+}
+
+class _ProfilTabState extends State<ProfilTab> {
+  Map<String, dynamic>? _user;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await DatabaseHelper.instance.getUserById(widget.userId);
+    if (mounted) {
+      setState(() {
+        _user = user;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final String username = _user?['username'] ?? 'Siswa Hebat';
+    final String role = _user?['role'] ?? 'Siswa';
+    final String kelas = _user?['kelas'] ?? '7';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -39,10 +72,7 @@ class ProfilTab extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Name and Role
-          Text(
-            'Siswa Hebat',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
+          Text(username, style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -51,7 +81,7 @@ class ProfilTab extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'Siswa',
+              '${role[0].toUpperCase()}${role.substring(1)}${role == 'siswa' ? ' - Kelas $kelas' : ''}',
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
                 fontWeight: FontWeight.w600,

@@ -14,6 +14,7 @@ class BerandaTab extends StatefulWidget {
 class _BerandaTabState extends State<BerandaTab> {
   int _completedSteps = 0;
   bool _isLoading = true;
+  Map<String, dynamic>? _user;
 
   @override
   void initState() {
@@ -25,9 +26,11 @@ class _BerandaTabState extends State<BerandaTab> {
     final count = await DatabaseHelper.instance.getDailyProgressCount(
       widget.userId,
     );
+    final user = await DatabaseHelper.instance.getUserById(widget.userId);
     if (mounted) {
       setState(() {
         _completedSteps = count;
+        _user = user;
         _isLoading = false;
       });
     }
@@ -61,146 +64,169 @@ class _BerandaTabState extends State<BerandaTab> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Text(
-            'Selamat Datang, Siswa!',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Ayo mulai kebiasaan baikmu hari ini.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 24),
-
-          // Menu Grid 3x3 (DISABLED)
-          GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio:
-                0.85, // Memberikan ruang vertikal lebih agar tidak overflow
-            children: [
-              _buildMenuCard(
-                context,
-                'Bangun Pagi',
-                Icons.wb_sunny,
-                Colors.orange,
-              ),
-              _buildMenuCard(context, 'Beribadah', Icons.book, Colors.purple),
-              _buildMenuCard(
-                context,
-                'Makan Sehat',
-                Icons.restaurant,
-                Colors.green,
-              ),
-              _buildMenuCard(
-                context,
-                'Olahraga',
-                Icons.directions_run,
-                Colors.red,
-              ),
-              _buildMenuCard(context, 'Sekolah', Icons.school, Colors.blue),
-              _buildMenuCard(
-                context,
-                'Gemar Belajar',
-                Icons.menu_book,
-                Colors.teal,
-              ),
-              _buildMenuCard(
-                context,
-                'Bermasyarakat',
-                Icons.groups,
-                Colors.amber,
-              ),
-              _buildMenuCard(
-                context,
-                'Tidur Cepat',
-                Icons.bedtime,
-                Colors.indigo,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 32),
-
-          // Tombol Rekap Harian
-          if (!_isLoading) ...[
-            if (_completedSteps < 8)
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _startRekap,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+    return _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Text(
+                  'Selamat Datang, ${_user?['username'] ?? 'Siswa'}!',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                if (_user?['kelas'] != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Text(
+                      'Siswa Kelas ${_user?['kelas']}',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    elevation: 4,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        _completedSteps > 0
-                            ? Icons.edit_note
-                            : Icons.play_arrow,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _completedSteps > 0
-                            ? 'LANJUTKAN REKAP HARIAN'
-                            : 'REKAP HARIAN',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 8),
+                Text(
+                  'Ayo mulai kebiasaan baikmu hari ini.',
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
-              )
-            else
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green.shade200),
-                ),
-                child: const Column(
+                const SizedBox(height: 24),
+
+                // Menu Grid 3x3 (DISABLED)
+                GridView.count(
+                  crossAxisCount: 3,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio:
+                      0.85, // Memberikan ruang vertikal lebih agar tidak overflow
                   children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                      size: 40,
+                    _buildMenuCard(
+                      context,
+                      'Bangun Pagi',
+                      Icons.wb_sunny,
+                      Colors.orange,
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Kamu sudah mengisi rekap hari ini!',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                        fontSize: 16,
-                      ),
+                    _buildMenuCard(
+                      context,
+                      'Beribadah',
+                      Icons.book,
+                      Colors.purple,
                     ),
-                    Text('Sampai jumpa besok!'),
+                    _buildMenuCard(
+                      context,
+                      'Makan Sehat',
+                      Icons.restaurant,
+                      Colors.green,
+                    ),
+                    _buildMenuCard(
+                      context,
+                      'Olahraga',
+                      Icons.directions_run,
+                      Colors.red,
+                    ),
+                    _buildMenuCard(
+                      context,
+                      'Sekolah',
+                      Icons.school,
+                      Colors.blue,
+                    ),
+                    _buildMenuCard(
+                      context,
+                      'Gemar Belajar',
+                      Icons.menu_book,
+                      Colors.teal,
+                    ),
+                    _buildMenuCard(
+                      context,
+                      'Bermasyarakat',
+                      Icons.groups,
+                      Colors.amber,
+                    ),
+                    _buildMenuCard(
+                      context,
+                      'Tidur Cepat',
+                      Icons.bedtime,
+                      Colors.indigo,
+                    ),
                   ],
                 ),
-              ),
-          ],
-        ],
-      ),
-    );
+
+                const SizedBox(height: 32),
+
+                // Tombol Rekap Harian
+                if (!_isLoading) ...[
+                  if (_completedSteps < 8)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _startRekap,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 4,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              _completedSteps > 0
+                                  ? Icons.edit_note
+                                  : Icons.play_arrow,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _completedSteps > 0
+                                  ? 'LANJUTKAN REKAP HARIAN'
+                                  : 'REKAP HARIAN',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.green.shade200),
+                      ),
+                      child: const Column(
+                        children: [
+                          Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 40,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Kamu sudah mengisi rekap hari ini!',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text('Sampai jumpa besok!'),
+                        ],
+                      ),
+                    ),
+                ],
+              ],
+            ),
+          );
   }
 
   // Helper tanpa onTap
