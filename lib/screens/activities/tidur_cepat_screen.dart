@@ -22,6 +22,7 @@ class TidurCepatScreen extends StatefulWidget {
 class _TidurCepatScreenState extends State<TidurCepatScreen> {
   TimeOfDay _selectedTime = const TimeOfDay(hour: 21, minute: 0);
   bool _isLoading = false;
+  bool _isConfirmed = false;
 
   @override
   void initState() {
@@ -154,11 +155,29 @@ class _TidurCepatScreenState extends State<TidurCepatScreen> {
               label: const Text('Ubah Waktu'),
             ),
             const Spacer(),
+            
+            // Confirmation Checkbox
+            CheckboxListTile(
+              title: const Text(
+                'Saya mengisi kegiatan ini apa adanya dan sejujur-jujurnya',
+                style: TextStyle(fontSize: 14),
+              ),
+              value: _isConfirmed,
+              onChanged: (val) {
+                setState(() {
+                  _isConfirmed = val ?? false;
+                });
+              },
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: EdgeInsets.zero,
+            ),
+            const SizedBox(height: 16),
+
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _saveData,
+                onPressed: (_isLoading || !_isConfirmed) ? null : _saveData,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: widget.isFlowMode
                       ? Colors.green
