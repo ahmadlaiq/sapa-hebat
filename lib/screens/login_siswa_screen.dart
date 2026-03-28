@@ -125,11 +125,9 @@ class _LoginSiswaScreenState extends State<LoginSiswaScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
                   decoration: InputDecoration(
-                    labelText: 'Password (6 digit)',
-                    hintText: 'Masukkan password 6 digit',
+                    labelText: 'Password',
+                    hintText: 'Masukkan password',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -147,9 +145,6 @@ class _LoginSiswaScreenState extends State<LoginSiswaScreen> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Password tidak boleh kosong';
-                    }
-                    if (value.length != 6) {
-                      return 'Password harus 6 digit';
                     }
                     return null;
                   },
