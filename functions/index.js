@@ -337,9 +337,131 @@ exports.dailyReminder = functions.pubsub
   .schedule("0 19 * * *")
   .timeZone("Asia/Jakarta")
   .onRun(async (context) => {
-    // Logic serupa: Cek siapa yg count < 8.
-    // Kirim notif "Ayo lengkapi catatan harimu!"
-    console.log("⏰ Daily Reminder Triggered");
-    // (Simplified logic for now due to complexity of checking all activities)
-    // Implementation pending user request detail.
+    console.log("⏰ Daily Reminder Triggered at 19:00 WIB");
+
+    const wibOffset = 7 * 60 * 60 * 1000;
+    const nowWIB = new Date(Date.now() + wibOffset);
+    const startOfDayStr = new Date(
+      nowWIB.setHours(0, 0, 0, 0) - wibOffset,
+    ).toISOString();
+
+    // 1. Fetch all students
+    const studentsSnap = await admin
+      .firestore()
+      .collection("users")
+      .where("role", "==", "siswa")
+      .get();
+      
+    const students = [];
+    const ortuIds = new Set();
+    studentsSnap.forEach((doc) => {
+      const data = doc.data();
+      students.push(data);
+      if (data.ortu_id) ortuIds.add(data.ortu_id);
+    });
+
+    // 2. Fetch all parents to get their tokens
+    const ortuTokens = {};
+    if (ortuIds.size > 0) {
+      const ortuSnap = await admin
+        .firestore()
+        .collection("users")
+        .where("role", "==", "ortu")
+        .get();
+      ortuSnap.forEach((doc) => {
+        const data = doc.data();
+        if (data.fcm_token) {
+          ortuTokens[data.id] = data.fcm_token;
+        }
+      });
+    }
+
+    // 3. Fetch all time_records today
+    const timeSnap = await admin
+      .firestore()
+      .collection("time_records")
+      .where("created_at", ">=", startOfDayStr)
+      .get();
+
+    // 4. Fetch all activities today
+    const activitySnap = await admin
+      .firestore()
+      .collection("activities")
+      .where("created_at", ">=", startOfDayStr)
+      .get();
+
+    // Map user_id to set of completed types
+    const userProgress = {};
+
+    timeSnap.forEach((doc) => {
+      const data = doc.data();
+      if (!userProgress[data.user_id]) userProgress[data.user_id] = new Set();
+      if (data.record_type === "bangun_pagi")
+        userProgress[data.user_id].add("bangun_pagi");
+      if (data.record_type === "tidur_cepat")
+        userProgress[data.user_id].add("tidur_cepat");
+    });
+
+    activitySnap.forEach((doc) => {
+      const data = doc.data();
+      if (!userProgress[data.user_id]) userProgress[data.user_id] = new Set();
+      if (data.activity_type) {
+        let key = data.activity_type.toLowerCase().replace(/ /g, "_");
+        userProgress[data.user_id].add(key);
+      }
+    });
+
+    const studentTokens = [];
+    const parentTokens = [];
+
+    students.forEach((student) => {
+      const progress = userProgress[student.id]
+        ? userProgress[student.id].size
+        : 0;
+      if (progress < 8) {
+        // Belum lengkap 8 aktivitas
+        if (student.fcm_token) studentTokens.push(student.fcm_token);
+        if (student.ortu_id && ortuTokens[student.ortu_id]) {
+          parentTokens.push(ortuTokens[student.ortu_id]);
+        }
+      }
+    });
+
+    // Send to students
+    if (studentTokens.length > 0) {
+      const chunks = [];
+      const tokensCopy = [...studentTokens];
+      while (tokensCopy.length > 0) chunks.push(tokensCopy.splice(0, 500));
+      for (const chunk of chunks) {
+        await admin.messaging().sendEachForMulticast({
+          notification: {
+            title: "Halo! Waktunya Laporan Hari Ini 📝",
+            body: "Kamu belum melengkapi semua aktivitas hari ini. Yuk, diisi sekarang sebelum tidur!",
+          },
+          tokens: chunk,
+        });
+      }
+    }
+
+    // Send to parents
+    if (parentTokens.length > 0) {
+      // Hapus duplikat (jika satu ortu punya banyak anak yg belum absen)
+      const uniqueParentTokens = [...new Set(parentTokens)];
+      const chunks = [];
+      while (uniqueParentTokens.length > 0)
+        chunks.push(uniqueParentTokens.splice(0, 500));
+      for (const chunk of chunks) {
+        await admin.messaging().sendEachForMulticast({
+          notification: {
+            title: "Peringatan Aktivitas Anak ⚠️",
+            body: "Anak Anda belum menyelesaikan laporan aktivitas hariannya. Mohon diingatkan ya!",
+          },
+          tokens: chunk,
+        });
+      }
+    }
+
+    console.log(
+      `Sent reminder to incomplete students: ${studentTokens.length}, Parents: ${parentTokens.length}`
+    );
   });
